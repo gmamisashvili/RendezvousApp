@@ -11,7 +11,7 @@ import { Match } from '../../types';
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [hasActiveRequest, setHasActiveRequest] = useState(false);
   const [activeMatch, setActiveMatch] = useState<Match | null>(null);
@@ -47,11 +47,6 @@ export default function DashboardScreen() {
 
     fetchDashboardData();
   }, []);
-
-  const handleLogout = async () => {
-    await logout();
-    // Navigation is handled by the auth context
-  };
 
   if (loading) {
     return (
@@ -115,13 +110,6 @@ export default function DashboardScreen() {
           </View>
         </Card.Content>
       </Card>
-
-      <Button
-        title="Logout"
-        onPress={handleLogout}
-        mode="outlined"
-        style={styles.logoutButton}
-      />
     </ScrollView>
   );
 }
@@ -172,10 +160,6 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 18,
     color: Colors.primary,
-  },
-  logoutButton: {
-    marginTop: 24,
-    marginHorizontal: Layout.padding,
   },
   loadingContainer: {
     flex: 1,

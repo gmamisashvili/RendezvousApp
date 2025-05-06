@@ -52,18 +52,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loadUser();
   }, []);
 
-  // Handle routing based on authentication state
   useEffect(() => {
     if (isLoading) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
+    debugger
+    const authRoutes = ['login', 'register'];
+    const inAuthRoute = authRoutes.includes(segments.join('/'));
     const inProtectedGroup = segments[0] === 'dashboard';
 
     if (!isAuthenticated && inProtectedGroup) {
-      // Redirect to login if trying to access protected routes while not authenticated
       router.replace('/login');
-    } else if (isAuthenticated && inAuthGroup) {
-      // Redirect to dashboard if already authenticated and trying to access auth routes
+    } else if (isAuthenticated && inAuthRoute) {
       router.replace('/dashboard');
     }
   }, [isAuthenticated, segments, isLoading, router]);

@@ -45,7 +45,8 @@ export default function LoginScreen() {
     try {
       const credentials: UserLogin = { email, password };
       const result = await login(credentials);
-      
+      debugger
+
       if (!result.success) {
         setErrors({ ...errors, general: result.error || 'Login failed' });
       } else {
