@@ -43,12 +43,12 @@ const authService = {
 
     // Get current user profile - this would need to be implemented on the backend
     getCurrentUser: async (): Promise<ApiResponse<User>> => {
-        return api.get<User>('/auth/me');
+        return api.get<User>('/profile');
     },
 
     // Update user profile - this would need to be implemented on the backend
     updateProfile: async (userData: Partial<User>): Promise<ApiResponse<User>> => {
-        return api.put<User>('/auth/profile', userData);
+        return api.put<User>('/profile', userData);
     },
 
     // Change password - this would need to be implemented on the backend

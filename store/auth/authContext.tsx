@@ -55,14 +55,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (isLoading) return;
 
-    debugger
-    const authRoutes = ['login', 'register'];
-    const inAuthRoute = authRoutes.includes(segments.join('/'));
-    const inProtectedGroup = segments[0] === 'dashboard';
+    // Get the current route path
+    const path = segments.join('/');
 
-    if (!isAuthenticated && inProtectedGroup) {
-      router.replace('/login');
-    } else if (isAuthenticated && inAuthRoute) {
+    // Routes that don't require authentication
+    const publicRoutes = ['', 'index', 'auth', 'auth/login', 'auth/register', 'auth/index'];
+
+    // Check if the current route is public
+    const isPublicRoute = publicRoutes.some(route =>
+      path === route || path === route + '/'
+    );
+
+    // Redirect unauthenticated users to auth page if they're trying to access protected routes
+    if (!isAuthenticated && !isPublicRoute) {
+      router.replace('/auth');
+    }
+
+    // Redirect authenticated users to dashboard if they're trying to access auth pages
+    else if (isAuthenticated && path.startsWith('auth/')) {
       router.replace('/dashboard');
     }
   }, [isAuthenticated, segments, isLoading, router]);
@@ -107,9 +117,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await authService.logout();
-    setUser(null);
-    router.replace('/login');
+    try {
+      await authService.logout();
+      setUser(null);
+      router.replace('/auth');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   const value = {

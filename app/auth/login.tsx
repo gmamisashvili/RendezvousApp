@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import Button from '../components/common/Button';
-import Input from '../components/common/Input';
-import Colors from '../constants/Colors';
-import Layout from '../constants/Layout';
-import { useAuth } from '../store';
-import { UserLogin } from '../types';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import Colors from '../../constants/Colors';
+import Layout from '../../constants/Layout';
+import { useAuth } from '../../store';
+import { UserLogin } from '../../types';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -45,7 +45,6 @@ export default function LoginScreen() {
     try {
       const credentials: UserLogin = { email, password };
       const result = await login(credentials);
-      debugger
 
       if (!result.success) {
         setErrors({ ...errors, general: result.error || 'Login failed' });
@@ -101,7 +100,7 @@ export default function LoginScreen() {
         
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => router.push('/register')}>
+          <TouchableOpacity onPress={() => router.push('auth/register')}>
             <Text style={styles.footerLink}>Sign Up</Text>
           </TouchableOpacity>
         </View>

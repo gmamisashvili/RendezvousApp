@@ -1,72 +1,27 @@
-import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import Button from '../components/common/Button';
-import Colors from '../constants/Colors';
-import Layout from '../constants/Layout';
+import {Redirect} from 'expo-router';
+import {ActivityIndicator, StyleSheet, View} from 'react-native';
+import {useAuth} from '../store/auth/authContext';
+import Colors from "../constants/Colors";
 
-export default function WelcomeScreen() {
-  const router = useRouter();
+export default function Index() {
+    const {isAuthenticated, isLoading} = useAuth();
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>Rendezvous</Text>
-          <Text style={styles.tagline}>Meet someone new, the old-fashioned way</Text>
-        </View>
-        
-        <View style={styles.buttonContainer}>
-          <Button 
-            title="Login" 
-            onPress={() => router.push('/login')} 
-            mode="contained"
-            style={styles.button}
-          />
-          <Button 
-            title="Sign Up" 
-            onPress={() => router.push('/register')} 
-            mode="outlined"
-            style={styles.button}
-          />
-        </View>
-      </View>
-    </SafeAreaView>
-  );
+    if (isLoading) {
+        return (
+            <View style={styles.container}>
+                <ActivityIndicator size="large" color={Colors.primary}/>
+            </View>
+        );
+    }
+
+    return isAuthenticated ? <Redirect href="/dashboard"/> : <Redirect href="/auth"/>;
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'space-between',
-    padding: Layout.padding,
-  },
-  logoContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logo: {
-    fontSize: 42,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    marginBottom: 16,
-  },
-  tagline: {
-    fontSize: 18,
-    color: Colors.text,
-    textAlign: 'center',
-  },
-  buttonContainer: {
-    width: '100%',
-    marginBottom: 32,
-  },
-  button: {
-    marginVertical: 8,
-  },
-}); 
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: Colors.background,
+    },
+});

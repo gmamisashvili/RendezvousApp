@@ -3,8 +3,8 @@ export interface User {
   userId: number;
   name: string;
   email: string;
-  gender: string;
-  interestedInGenders: string;
+  gender: Gender;
+  interestedInGenders: Gender[];
   dateOfBirth: Date;
   interests: Interest[];
 }
@@ -13,8 +13,8 @@ export interface UserRegistration {
   name: string;
   email: string;
   password: string;
-  gender: string;
-  interestedInGenders: string;
+  gender: Gender;
+  interestedInGenders: Gender[];
   dateOfBirth: Date;
   interestIds: number[];
   agreeToTerms: boolean;
@@ -86,9 +86,9 @@ export interface RegistrationErrors {
   name: string;
   email: string;
   password: string;
-  gender: string;
+  gender: Gender;
   birthDate: string;
-  interestedInGenders: string;
+  interestedInGenders: Gender[];
   interests: string;
   terms: string;
 }
@@ -110,4 +110,9 @@ export interface AuthResponse {
   message: string;
   token: string;
   user: User;
-} 
+}
+
+export enum Gender {
+  Male,
+  Female
+}

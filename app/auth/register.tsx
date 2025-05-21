@@ -4,12 +4,12 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {useRouter} from 'expo-router';
 import {Checkbox} from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import Button from '../components/common/Button';
-import Input from '../components/common/Input';
-import Colors from '../constants/Colors';
-import {useAuth} from '../store';
-import {interestService} from '../services';
-import {Interest, UserRegistration} from '../types';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import Colors from '../../constants/Colors';
+import {useAuth} from '../../store';
+import {interestService} from '../../services';
+import {Gender, Interest, UserRegistration} from '../../types';
 
 // Mock interests data
 const MOCK_INTERESTS = [
@@ -26,7 +26,16 @@ const MOCK_INTERESTS = [
 ];
 
 // Available gender options for selection
-const genderOptions = ['Male', 'Female', 'Non-binary', 'Other'];
+const genderOptions: {label: string, value: Gender}[] = [
+    {
+        label: 'Male',
+        value: Gender.Male
+    },
+    {
+        label: 'Female',
+        value: Gender.Female
+    }
+];
 
 export default function RegisterScreen() {
     const router = useRouter();
@@ -35,8 +44,8 @@ export default function RegisterScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [birthDate, setBirthDate] = useState<Date | null>(null);
-    const [gender, setGender] = useState('');
-    const [selectedGenders, setSelectedGenders] = useState<string[]>([]);
+    const [gender, setGender] = useState<Gender>(Gender.Female);
+    const [selectedGenders, setSelectedGenders] = useState<Gender[]>([]);
     const [interests, setInterests] = useState<Interest[]>([]);
     const [selectedInterestIds, setSelectedInterestIds] = useState<number[]>([]);
     const [agreeToTerms, setAgreeToTerms] = useState(false);
@@ -128,7 +137,7 @@ export default function RegisterScreen() {
             valid = false;
         }
 
-        if (!gender) {
+        if (gender === undefined) {
             newErrors.gender = 'Gender is required';
             valid = false;
         }
@@ -174,7 +183,7 @@ export default function RegisterScreen() {
                 email,
                 password,
                 gender,
-                interestedInGenders: selectedGenders.join(','),
+                interestedInGenders: selectedGenders,
                 dateOfBirth: birthDate!,
                 interestIds: selectedInterestIds,
                 agreeToTerms
@@ -207,7 +216,7 @@ export default function RegisterScreen() {
         );
     };
 
-    const toggleGenderSelection = (genderOption: string) => {
+    const toggleGenderSelection = (genderOption: Gender) => {
         setSelectedGenders(prev =>
             prev.includes(genderOption)
                 ? prev.filter(g => g !== genderOption)
@@ -268,34 +277,23 @@ export default function RegisterScreen() {
                         <TouchableOpacity
                             style={[
                                 styles.option,
-                                gender === 'Male' && styles.selectedOption
+                                gender === Gender.Male && styles.selectedOption
                             ]}
-                            onPress={() => setGender('Male')}
+                            onPress={() => setGender(Gender.Male)}
                         >
-                            <Text style={gender === 'Male' ? styles.selectedOptionText : styles.optionText}>
+                            <Text style={gender === Gender.Male ? styles.selectedOptionText : styles.optionText}>
                                 Male
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[
                                 styles.option,
-                                gender === 'Female' && styles.selectedOption
+                                gender === Gender.Female && styles.selectedOption
                             ]}
-                            onPress={() => setGender('Female')}
+                            onPress={() => setGender(Gender.Female)}
                         >
-                            <Text style={gender === 'Female' ? styles.selectedOptionText : styles.optionText}>
+                            <Text style={gender === Gender.Female ? styles.selectedOptionText : styles.optionText}>
                                 Female
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[
-                                styles.option,
-                                gender === 'Other' && styles.selectedOption
-                            ]}
-                            onPress={() => setGender('Other')}
-                        >
-                            <Text style={gender === 'Other' ? styles.selectedOptionText : styles.optionText}>
-                                Other
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -306,13 +304,13 @@ export default function RegisterScreen() {
                     <Text style={styles.label}>Interested In</Text>
                     <View style={styles.checkboxContainer}>
                         {genderOptions.map((genderOption) => (
-                            <View key={genderOption} style={styles.checkboxRow}>
+                            <View key={genderOption.value} style={styles.checkboxRow}>
                                 <Checkbox
-                                    status={selectedGenders.includes(genderOption) ? 'checked' : 'unchecked'}
-                                    onPress={() => toggleGenderSelection(genderOption)}
+                                    status={selectedGenders.includes(genderOption.value) ? 'checked' : 'unchecked'}
+                                    onPress={() => toggleGenderSelection(genderOption.value)}
                                     color={Colors.primary}
                                 />
-                                <Text style={styles.checkboxLabel}>{genderOption}</Text>
+                                <Text style={styles.checkboxLabel}>{genderOption.label}</Text>
                             </View>
                         ))}
                     </View>
@@ -447,7 +445,7 @@ export default function RegisterScreen() {
 
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>Already have an account? </Text>
-                    <TouchableOpacity onPress={() => router.push('/login')}>
+                    <TouchableOpacity onPress={() => router.push('auth/login')}>
                         <Text style={styles.footerLink}>Login</Text>
                     </TouchableOpacity>
                 </View>
