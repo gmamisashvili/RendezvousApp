@@ -1,11 +1,38 @@
 {
   "expo": {
+    "name": "Rendezvous",
+    "slug": "rendezvous-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "scheme": "acme",
+    "scheme": "rendezvous",
+    "platforms": ["ios", "android"],
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "This app needs access to location to show you nearby people."
+        }
+      ]
     ],
-    "name": "rendezvous-app",
-    "slug": "rendezvous-app"
+    "ios": {
+      "bundleIdentifier": "com.rendezvous.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs access to location to show you nearby people.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to location to show you nearby people."
+      }
+    },
+    "android": {
+      "package": "com.rendezvous.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "web": {
+      "bundler": "metro"
+    }
   }
 }

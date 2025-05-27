@@ -14,7 +14,8 @@ export default function Index() {
         );
     }
 
-    return isAuthenticated ? <Redirect href="/dashboard"/> : <Redirect href="/auth"/>;
+    // Redirect to discovery (dashboard) as the main page where users see other users
+    return isAuthenticated ? <Redirect href="/(tabs)/dashboard"/> : <Redirect href="/auth"/>;
 }
 
 const styles = StyleSheet.create({

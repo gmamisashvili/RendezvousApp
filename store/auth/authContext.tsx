@@ -73,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Redirect authenticated users to dashboard if they're trying to access auth pages
     else if (isAuthenticated && path.startsWith('auth/')) {
-      router.replace('/dashboard');
+      router.replace('/(tabs)/dashboard');
     }
   }, [isAuthenticated, segments, isLoading, router]);
 

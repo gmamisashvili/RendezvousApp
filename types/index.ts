@@ -7,6 +7,30 @@ export interface User {
   interestedInGenders: Gender[];
   dateOfBirth: Date;
   interests: Interest[];
+  photos?: string[];
+  bio?: string;
+  distance?: number;
+  age?: number;
+}
+
+// Profile for browsing/swiping
+export interface UserProfile {
+  userId: number;
+  name: string;
+  age: number;
+  bio?: string;
+  photos: string[];
+  interests: Interest[];
+  distance: number;
+  gender: Gender;
+}
+
+// Swipe/Like actions
+export type SwipeAction = 'like' | 'dislike';
+
+export interface SwipeResult {
+  match: boolean;
+  matchId?: number;
 }
 
 export interface UserRegistration {
