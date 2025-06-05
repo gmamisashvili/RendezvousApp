@@ -79,7 +79,9 @@ export default function DashboardScreen() {
       const response = await discoveryService.getNearbyUsers(
         currentLocation.latitude,
         currentLocation.longitude,
-        10 // 10km radius
+        discoverySettings.maxDistance,
+        discoverySettings.ageRange.min,
+        discoverySettings.ageRange.max
       );
 
       if (response.success && response.data) {
@@ -106,7 +108,7 @@ export default function DashboardScreen() {
     } finally {
       setLoading(false);
     }
-  }, [location]);
+  }, [location, discoverySettings]);
 
   useEffect(() => {
     const initializeScreen = async () => {

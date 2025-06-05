@@ -7,12 +7,34 @@ const discoveryService = {
   getNearbyUsers: async (
     latitude: number, 
     longitude: number, 
-    radius: number = 10
+    radius: number = 10,
+    minAge?: number,
+    maxAge?: number
   ): Promise<ApiResponse<UserProfile[]>> => {
     try {
+      // Build query parameters for the API request
+      const params: any = { 
+        latitude, 
+        longitude, 
+        radius 
+      };
+      
+      if (minAge !== undefined) params.minAge = minAge;
+      if (maxAge !== undefined) params.maxAge = maxAge;
+
       const result = await api.get<UserProfile[]>('/discovery/nearby', {
-        params: { latitude, longitude, radius }
+        params
       });
+      
+      if (__DEV__) {
+        console.log('Discovery API call:', {
+          url: '/discovery/nearby',
+          params,
+          success: result.success,
+          dataLength: result.data?.length || 0,
+          error: result.error
+        });
+      }
       
       // If the API call fails due to server not running or endpoint not found
       if (!result.success && (

@@ -10,7 +10,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import Colors from '../../constants/Colors';
 import { discoveryService } from '../../services';
@@ -20,6 +20,7 @@ export default function MatchesScreen() {
   const [matches, setMatches] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
 
   const fetchMatches = useCallback(async () => {
     try {
@@ -83,8 +84,7 @@ export default function MatchesScreen() {
       <TouchableOpacity 
         style={styles.discoverButton}
         onPress={() => {
-          // TODO: Navigate to discovery tab
-          console.log('Navigate to discovery');
+          router.push('/(tabs)/dashboard');
         }}
       >
         <Text style={styles.discoverButtonText}>Start Discovering</Text>

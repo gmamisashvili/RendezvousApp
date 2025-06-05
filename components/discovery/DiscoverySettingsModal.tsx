@@ -58,7 +58,7 @@ const DiscoverySettingsModal: React.FC<DiscoverySettingsModalProps> = ({
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.content}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Distance Setting */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Maximum Distance</Text>
@@ -161,7 +161,7 @@ const DiscoverySettingsModal: React.FC<DiscoverySettingsModalProps> = ({
           </View>
 
           {/* Gender Preferences */}
-          <View style={styles.section}>
+          <View style={[styles.section, styles.lastSection]}>
             <Text style={styles.sectionTitle}>Show me to</Text>
             
             <View style={styles.switchContainer}>
@@ -221,10 +221,15 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
   },
   section: {
     marginBottom: 30,
+  },
+  lastSection: {
+    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,
@@ -262,10 +267,10 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   ageRangeContainer: {
-    gap: 20,
+    gap: 24,
   },
   ageInput: {
-    marginBottom: 16,
+    marginBottom: 0,
   },
   ageLabel: {
     fontSize: 16,
@@ -300,7 +305,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   switchContainer: {
-    gap: 16,
+    gap: 12,
   },
   switchRow: {
     flexDirection: 'row',

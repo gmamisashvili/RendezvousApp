@@ -13,7 +13,7 @@ export interface User {
   age?: number;
 }
 
-// Profile for browsing/swiping
+// Profile for browsing/swiping - matches backend UserDiscoveryDto
 export interface UserProfile {
   userId: number;
   name: string;
@@ -23,6 +23,7 @@ export interface UserProfile {
   interests: Interest[];
   distance: number;
   gender: Gender;
+  isVerified: boolean;
 }
 
 // Swipe/Like actions
@@ -137,6 +138,7 @@ export interface AuthResponse {
 }
 
 export enum Gender {
-  Male,
-  Female
+  Male = 0,
+  Female = 1,
+  Other = 2
 }

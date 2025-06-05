@@ -29,19 +29,6 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   onDislike, 
   onReport 
 }) => {
-  const calculateAge = (birthDate: Date): number => {
-    const today = new Date();
-    const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
-    
-    return age;
-  };
-
   const formatDistance = (distance: number): string => {
     if (distance < 1) {
       return 'Less than 1 km away';
@@ -76,6 +63,9 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       <View style={styles.infoContainer}>
         <View style={styles.headerInfo}>
           <Text style={styles.name}>{user.name}</Text>
+          {user.isVerified && (
+            <FontAwesome name="check-circle" size={16} color={Colors.primary} style={styles.verifiedIcon} />
+          )}
           <Text style={styles.age}>, {user.age}</Text>
         </View>
         
@@ -184,6 +174,10 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: 'white',
+  },
+  verifiedIcon: {
+    marginLeft: 5,
+    marginBottom: 2,
   },
   age: {
     fontSize: 24,

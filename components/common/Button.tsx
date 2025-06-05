@@ -28,6 +28,7 @@ const Button = ({
       disabled={disabled}
       style={[styles.button, style]}
       labelStyle={styles.label}
+      contentStyle={styles.content}
     >
       {title}
     </PaperButton>
@@ -40,8 +41,16 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
   },
+  content: {
+    paddingVertical: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   label: {
     fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    color: Colors.text,
   },
 });
 

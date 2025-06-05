@@ -93,9 +93,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 40,
   },
-  icon: {
-    marginBottom: 30,
-  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -114,6 +111,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent:'center',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 25,

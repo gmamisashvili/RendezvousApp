@@ -6,6 +6,7 @@ import Colors from "../constants/Colors";
 export default function Index() {
     const {isAuthenticated, isLoading} = useAuth();
 
+    // Show loading indicator while checking authentication
     if (isLoading) {
         return (
             <View style={styles.container}>
@@ -14,7 +15,7 @@ export default function Index() {
         );
     }
 
-    // Redirect to discovery (dashboard) as the main page where users see other users
+    // Only redirect after authentication check is complete
     return isAuthenticated ? <Redirect href="/(tabs)/dashboard"/> : <Redirect href="/auth"/>;
 }
 

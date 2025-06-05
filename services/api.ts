@@ -1,9 +1,55 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { ApiResponse } from '../types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
+import { DEVELOPMENT_CONFIG } from '../config/development';
 
+// Get the IP address for development
+const getApiBaseUrl = () => {
+  if (__DEV__) {
+    // If manual IP is set, use it (works for both physical devices and emulators)
+    if (DEVELOPMENT_CONFIG.COMPUTER_IP) {
+      return `http://${DEVELOPMENT_CONFIG.COMPUTER_IP}:${DEVELOPMENT_CONFIG.API_PORT}/api`;
+    }
+    
+    // For Android emulator, use the special IP that maps to host localhost
+    if (Platform.OS === 'android' && !Constants.isDevice) {
+      return `http://10.0.2.2:${DEVELOPMENT_CONFIG.API_PORT}/api`;
+    }
+    
+    // For iOS simulator, use localhost
+    if (Platform.OS === 'ios' && !Constants.isDevice) {
+      return `http://localhost:${DEVELOPMENT_CONFIG.API_PORT}/api`;
+    }
+    
+    // Try to get from expo manifest for physical devices
+    const manifest = Constants.expoConfig;
+    if (manifest?.hostUri) {
+      const debuggerHost = manifest.hostUri.split(':')[0];
+      return `http://${debuggerHost}:${DEVELOPMENT_CONFIG.API_PORT}/api`;
+    }
+    
+    // Fallback for development
+    if (Platform.OS === 'android') {
+      return `http://10.0.2.2:${DEVELOPMENT_CONFIG.API_PORT}/api`;
+    } else {
+      return `http://localhost:${DEVELOPMENT_CONFIG.API_PORT}/api`;
+    }
+  }
+  
+  // Production URL would go here
+  return 'https://your-production-api.com/api';
+};
 
-const API_BASE_URL = 'http://localhost:5166/api';
+const API_BASE_URL = getApiBaseUrl();
+
+// Log the API URL for debugging
+if (DEVELOPMENT_CONFIG.DEBUG_API) {
+  console.log('API Base URL:', API_BASE_URL);
+  console.log('Platform:', Platform.OS);
+  console.log('Is Device:', Constants.isDevice);
+}
 
 // Create a typed Axios instance
 const apiClient: AxiosInstance = axios.create({
