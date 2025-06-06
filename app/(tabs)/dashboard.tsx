@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import SwipeableCard from '../../components/discovery/SwipeableCard';
+import SwipeableCard, { SwipeableCardRef } from '../../components/discovery/SwipeableCard';
 import MatchModal from '../../components/discovery/MatchModal';
 import EmptyState from '../../components/discovery/EmptyState';
 import DiscoverySettingsModal, { DiscoverySettings } from '../../components/discovery/DiscoverySettingsModal';
@@ -38,6 +38,8 @@ export default function DashboardScreen() {
     showMeToMen: true,
     showMeToWomen: true,
   });
+  
+  const swipeableCardRef = useRef<SwipeableCardRef>(null);
 
   const getCurrentLocation = useCallback(async () => {
     try {
@@ -147,7 +149,14 @@ export default function DashboardScreen() {
         }
         
         // Move to next user
-        setCurrentUserIndex(prev => prev + 1);
+        setCurrentUserIndex(prev => {
+          const newIndex = prev + 1;
+          // Reset the swipeable card animation for the next card
+          setTimeout(() => {
+            swipeableCardRef.current?.reset();
+          }, 100);
+          return newIndex;
+        });
       } else {
         Alert.alert('Error', response.error || 'Failed to process swipe');
       }
@@ -270,8 +279,11 @@ export default function DashboardScreen() {
         {hasMoreUsers && currentUser ? (
           <View style={styles.cardContainer}>
             <SwipeableCard
+              ref={swipeableCardRef}
               user={currentUser}
               onReport={handleReport}
+              onSwipeLeft={handleDislike}
+              onSwipeRight={handleLike}
             />
             
             {/* Show next card in background if available */}
@@ -280,6 +292,8 @@ export default function DashboardScreen() {
                 <SwipeableCard
                   user={users[currentUserIndex + 1]}
                   onReport={() => {}}
+                  onSwipeLeft={() => {}}
+                  onSwipeRight={() => {}}
                 />
               </View>
             )}
@@ -290,7 +304,7 @@ export default function DashboardScreen() {
                 style={[styles.actionButton, styles.dislikeActionButton]} 
                 onPress={async () => {
                   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  handleDislike();
+                  swipeableCardRef.current?.swipeLeft();
                 }}
               >
                 <FontAwesome name="times" size={32} color="#FF4458" />
@@ -301,7 +315,7 @@ export default function DashboardScreen() {
                 onPress={async () => {
                   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
                   // TODO: Implement super like functionality
-                  handleLike();
+                  swipeableCardRef.current?.swipeRight();
                 }}
               >
                 <FontAwesome name="star" size={24} color="#1EC71E" />
@@ -311,7 +325,7 @@ export default function DashboardScreen() {
                 style={[styles.actionButton, styles.likeActionButton]} 
                 onPress={async () => {
                   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  handleLike();
+                  swipeableCardRef.current?.swipeRight();
                 }}
               >
                 <FontAwesome name="heart" size={28} color="#FF4458" />
