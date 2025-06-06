@@ -13,6 +13,16 @@ export interface User {
   age?: number;
 }
 
+// Photo related types
+export interface Photo {
+  photoId: number;
+  url: string;
+  isMain: boolean;
+  publicId: string;
+  userId: number;
+  dateAdded: Date;
+}
+
 // Profile for browsing/swiping - matches backend UserDiscoveryDto
 export interface UserProfile {
   userId: number;

@@ -4,6 +4,7 @@ import dateService from './dateService';
 import locationService from './locationService';
 import interestService from './interestService';
 import discoveryService from './discoveryService';
+import photoService from './photoService';
 
 export {
   api,
@@ -11,5 +12,6 @@ export {
   dateService,
   locationService,
   interestService,
-  discoveryService
-}; 
+  discoveryService,
+  photoService
+};

@@ -1,42 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   StyleSheet, 
   ScrollView, 
   Text, 
-  TouchableOpacity,
-  Image 
+  TouchableOpacity
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import ProfileForm from '../../components/profile/ProfileForm';
+import PhotoManagement from '../../components/profile/PhotoManagement';
 import LogoutButton from '../../components/profile/LogoutButton';
 import Colors from '../../constants/Colors';
 import { useAuth } from '../../store';
-import { discoveryService } from '../../services';
+import { Photo } from '../../types';
+import { SafeImage } from '../../utils/imageUtils';
 
 export default function ProfileScreen() {
   const { user } = useAuth();
-  const [matches, setMatches] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchMatches = async () => {
-      try {
-        const response = await discoveryService.getMatches();
-        if (response.success && response.data) {
-          setMatches(response.data);
-        }
-      } catch (error) {
-        console.error('Error fetching matches:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMatches();
-  }, []);
+  const [profileExpanded, setProfileExpanded] = useState(false);
+  const [photosExpanded, setPhotosExpanded] = useState(false);
+  const [userPhotos, setUserPhotos] = useState<Photo[]>([]);
 
   if (!user) {
     return null;
@@ -55,6 +40,33 @@ export default function ProfileScreen() {
     return age;
   };
 
+  const handlePhotosChanged = (photos: Photo[]) => {
+    setUserPhotos(photos);
+  };
+
+  // Get main photo URL from Photo objects
+  const getMainPhotoUrl = (): string | null => {
+    // First check for main photo from userPhotos (Photo objects)
+    const mainPhoto = userPhotos.find(photo => photo.isMain);
+    if (mainPhoto?.url && typeof mainPhoto.url === 'string') {
+      return mainPhoto.url;
+    }
+    
+    // Then check for any photo from userPhotos
+    const firstPhoto = userPhotos[0];
+    if (firstPhoto?.url && typeof firstPhoto.url === 'string') {
+      return firstPhoto.url;
+    }
+    
+    // Finally check user.photos (string array) as fallback
+    const fallbackPhoto = user.photos?.[0];
+    if (fallbackPhoto && typeof fallbackPhoto === 'string') {
+      return fallbackPhoto;
+    }
+    
+    return null;
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <Stack.Screen
@@ -68,10 +80,14 @@ export default function ProfileScreen() {
           {/* Profile Header */}
           <View style={styles.profileHeader}>
             <View style={styles.photoContainer}>
-              {user.photos && user.photos.length > 0 ? (
-                <Image 
-                  source={{ uri: user.photos[0] }} 
+              {getMainPhotoUrl() ? (
+                <SafeImage 
+                  uri={getMainPhotoUrl()!}
                   style={styles.profilePhoto}
+                  fallbackStyle={styles.placeholderPhoto}
+                  fallbackIcon="user"
+                  fallbackIconSize={60}
+                  fallbackIconColor={Colors.disabled}
                 />
               ) : (
                 <View style={styles.placeholderPhoto}>
@@ -87,29 +103,46 @@ export default function ProfileScreen() {
             )}
           </View>
 
-          {/* Stats Section */}
-          <View style={styles.statsContainer}>
-            <Text style={styles.sectionTitle}>Your Activity</Text>
-            <View style={styles.statsGrid}>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>
-                  {loading ? '...' : matches.length}
-                </Text>
-                <Text style={styles.statLabel}>Matches</Text>
+          {/* Profile Management Section */}
+          <View style={styles.section}>
+            <TouchableOpacity 
+              style={styles.collapsibleHeader}
+              onPress={() => setProfileExpanded(!profileExpanded)}
+            >
+              <FontAwesome name="user-circle" size={20} color={Colors.text} />
+              <Text style={styles.sectionTitle}>Profile Management</Text>
+              <FontAwesome 
+                name={profileExpanded ? "chevron-up" : "chevron-down"} 
+                size={16} 
+                color={Colors.disabled} 
+              />
+            </TouchableOpacity>
+            {profileExpanded && (
+              <View style={styles.collapsibleContent}>
+                <ProfileForm user={user} />
               </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>
-                  {user.interests?.length || 0}
-                </Text>
-                <Text style={styles.statLabel}>Interests</Text>
-              </View>
-            </View>
+            )}
           </View>
 
-          {/* Edit Profile Section */}
+          {/* Photos Management Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Edit Profile</Text>
-            <ProfileForm user={user} />
+            <TouchableOpacity 
+              style={styles.collapsibleHeader}
+              onPress={() => setPhotosExpanded(!photosExpanded)}
+            >
+              <FontAwesome name="camera" size={20} color={Colors.text} />
+              <Text style={styles.sectionTitle}>Photos</Text>
+              <FontAwesome 
+                name={photosExpanded ? "chevron-up" : "chevron-down"} 
+                size={16} 
+                color={Colors.disabled} 
+              />
+            </TouchableOpacity>
+            {photosExpanded && (
+              <View style={styles.collapsibleContent}>
+                <PhotoManagement onPhotosChanged={handlePhotosChanged} />
+              </View>
+            )}
           </View>
 
           {/* Settings Section */}
@@ -179,47 +212,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
   },
-  statsContainer: {
+  section: {
     marginBottom: 30,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '600',
     color: Colors.text,
-    marginBottom: 16,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statCard: {
-    alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 12,
+    marginLeft: 16,
     flex: 1,
-    marginHorizontal: 8,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  statNumber: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: Colors.placeholder,
-  },
-  section: {
-    marginBottom: 30,
   },
   settingItem: {
     flexDirection: 'row',
@@ -242,5 +243,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.text,
     marginLeft: 16,
+  },
+  collapsibleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  collapsibleContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
 });

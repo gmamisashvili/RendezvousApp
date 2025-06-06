@@ -9,4 +9,5 @@ export default {
   info: '#2196F3',
   disabled: '#BDBDBD',
   placeholder: '#9E9E9E',
-}; 
+  border: '#E0E0E0',
+};
