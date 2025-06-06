@@ -4,7 +4,8 @@ import {
   StyleSheet, 
   ScrollView, 
   Text, 
-  TouchableOpacity
+  TouchableOpacity,
+  Image
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,7 +16,6 @@ import LogoutButton from '../../components/profile/LogoutButton';
 import Colors from '../../constants/Colors';
 import { useAuth } from '../../store';
 import { Photo } from '../../types';
-import { SafeImage } from '../../utils/imageUtils';
 
 export default function ProfileScreen() {
   const { user } = useAuth();
@@ -81,13 +81,11 @@ export default function ProfileScreen() {
           <View style={styles.profileHeader}>
             <View style={styles.photoContainer}>
               {getMainPhotoUrl() ? (
-                <SafeImage 
-                  uri={getMainPhotoUrl()!}
+                <Image 
+                  source={{ uri: getMainPhotoUrl()! }}
                   style={styles.profilePhoto}
-                  fallbackStyle={styles.placeholderPhoto}
-                  fallbackIcon="user"
-                  fallbackIconSize={60}
-                  fallbackIconColor={Colors.disabled}
+                  defaultSource={require('../../assets/images/default-avatar.png')}
+                  onError={() => console.warn('Failed to load profile image')}
                 />
               ) : (
                 <View style={styles.placeholderPhoto}>

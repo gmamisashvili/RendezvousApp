@@ -15,8 +15,6 @@ import Colors from '../../constants/Colors';
 
 interface SwipeableCardProps {
   user: UserProfile;
-  onLike: () => void;
-  onDislike: () => void;
   onReport: () => void;
 }
 
@@ -25,8 +23,6 @@ const cardHeight = screenHeight * 0.7;
 
 const SwipeableCard: React.FC<SwipeableCardProps> = ({ 
   user, 
-  onLike, 
-  onDislike, 
   onReport 
 }) => {
   const formatDistance = (distance: number): string => {
@@ -44,15 +40,13 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
             source={{ uri: user.photos[0] }} 
             style={styles.image}
             resizeMode="cover"
+            defaultSource={require('../../assets/images/default-avatar.png')}
           />
         ) : (
           <View style={styles.placeholderImage}>
             <FontAwesome name="user" size={100} color={Colors.disabled} />
           </View>
         )}
-        
-        {/* Overlay gradient */}
-        <View style={styles.overlay} />
         
         {/* Report button */}
         <TouchableOpacity style={styles.reportButton} onPress={onReport}>
@@ -98,16 +92,6 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
           </ScrollView>
         )}
       </View>
-
-      <View style={styles.actionButtons}>
-        <TouchableOpacity style={styles.dislikeButton} onPress={onDislike}>
-          <FontAwesome name="times" size={30} color="white" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.likeButton} onPress={onLike}>
-          <FontAwesome name="heart" size={30} color="white" />
-        </TouchableOpacity>
-      </View>
     </Card>
   );
 };
@@ -127,10 +111,14 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
+    backgroundColor: 'white',
   },
   imageContainer: {
-    flex: 1,
+    height: '65%',
     position: 'relative',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: 'hidden',
   },
   image: {
     width: '100%',
@@ -143,14 +131,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  overlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '50%',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
   reportButton: {
     position: 'absolute',
     top: 20,
@@ -160,10 +140,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   infoContainer: {
-    position: 'absolute',
-    bottom: 80,
-    left: 20,
-    right: 20,
+    padding: 16,
+    backgroundColor: 'white',
+    flex: 1,
   },
   headerInfo: {
     flexDirection: 'row',
@@ -173,7 +152,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: 'white',
+    color: Colors.text,
   },
   verifiedIcon: {
     marginLeft: 5,
@@ -181,17 +160,17 @@ const styles = StyleSheet.create({
   },
   age: {
     fontSize: 24,
-    color: 'white',
+    color: Colors.text,
     fontWeight: '300',
   },
   distance: {
     fontSize: 16,
-    color: 'white',
+    color: Colors.placeholder,
     marginBottom: 10,
   },
   bio: {
     fontSize: 16,
-    color: 'white',
+    color: Colors.text,
     lineHeight: 22,
     marginBottom: 10,
   },
@@ -202,14 +181,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   interestChip: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: Colors.lightBackground,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 15,
     marginRight: 8,
   },
   interestText: {
-    color: 'white',
+    color: Colors.primary,
     fontSize: 12,
     fontWeight: '500',
   },

@@ -7,12 +7,12 @@ import {
   Alert,
   ActivityIndicator,
   Modal,
+  Image,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { usePhotoManagement } from '../../hooks';
 import { Photo } from '../../types';
 import Colors from '../../constants/Colors';
-import { SafeImage, validateImageUri } from '../../utils/imageUtils';
 
 interface PhotoManagementProps {
   onPhotosChanged?: (photos: Photo[]) => void;
@@ -30,6 +30,47 @@ export default function PhotoManagement({ onPhotosChanged }: PhotoManagementProp
   } = usePhotoManagement();
 
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+
+  // Utility function to validate image URIs
+  const validateImageUri = (uri: string): string | null => {
+    if (!uri || typeof uri !== 'string') {
+      return null;
+    }
+    
+    const trimmedUri = uri.trim();
+    if (!trimmedUri) {
+      return null;
+    }
+    
+    try {
+      // Basic URL validation
+      if (trimmedUri.startsWith('http://') || trimmedUri.startsWith('https://')) {
+        return trimmedUri;
+      }
+      
+      // Relative URLs
+      if (trimmedUri.startsWith('/') || 
+          trimmedUri.startsWith('./') || 
+          trimmedUri.startsWith('../')) {
+        return trimmedUri;
+      }
+      
+      // Data URLs
+      if (trimmedUri.startsWith('data:image/')) {
+        return trimmedUri;
+      }
+      
+      // File URLs
+      if (trimmedUri.startsWith('file://')) {
+        return trimmedUri;
+      }
+      
+      return null;
+    } catch (error) {
+      console.warn('Invalid image URI:', error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     refreshPhotos();
@@ -98,13 +139,11 @@ export default function PhotoManagement({ onPhotosChanged }: PhotoManagementProp
               </TouchableOpacity>
             </View>
 
-            <SafeImage 
-              uri={selectedPhoto.url}
+            <Image 
+              source={{ uri: selectedPhoto.url }}
               style={styles.modalImage}
-              fallbackStyle={{ backgroundColor: Colors.background }}
-              fallbackIcon="image"
-              fallbackIconSize={48}
-              fallbackIconColor={Colors.disabled}
+              defaultSource={require('../../assets/images/default-avatar.png')}
+              onError={() => console.warn('Failed to load modal image')}
             />
 
             {selectedPhoto.isMain && (
@@ -167,12 +206,11 @@ export default function PhotoManagement({ onPhotosChanged }: PhotoManagementProp
               style={styles.photoItem}
               onPress={() => handlePhotoPress(photo)}
             >
-              <SafeImage 
-                uri={photo.url}
+              <Image 
+                source={{ uri: photo.url }}
                 style={styles.photoThumbnail}
-                fallbackStyle={{ backgroundColor: Colors.background }}
-                fallbackIcon="image"
-                fallbackIconColor={Colors.disabled}
+                defaultSource={require('../../assets/images/default-avatar.png')}
+                onError={() => console.warn(`Failed to load thumbnail for photo ID: ${photo.photoId}`)}
               />
               {photo.isMain && (
                 <View style={styles.mainBadge}>

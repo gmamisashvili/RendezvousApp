@@ -190,7 +190,7 @@ export default function DashboardScreen() {
       const response = await discoveryService.reportUser(userId, reason);
       if (response.success) {
         Alert.alert('Reported', 'Thank you for your report. We will review it shortly.');
-        setCurrentUserIndex(prev => prev + 1);
+        await handleDislike();
       } else {
         Alert.alert('Error', response.error || 'Failed to submit report');
       }
@@ -271,8 +271,6 @@ export default function DashboardScreen() {
           <View style={styles.cardContainer}>
             <SwipeableCard
               user={currentUser}
-              onLike={handleLike}
-              onDislike={handleDislike}
               onReport={handleReport}
             />
             
@@ -281,8 +279,6 @@ export default function DashboardScreen() {
               <View style={styles.nextCardContainer}>
                 <SwipeableCard
                   user={users[currentUserIndex + 1]}
-                  onLike={() => {}}
-                  onDislike={() => {}}
                   onReport={() => {}}
                 />
               </View>

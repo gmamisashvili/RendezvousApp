@@ -2,6 +2,7 @@ export default {
   primary: '#FF6B6B',
   secondary: '#4ECDC4',
   background: '#FFFFFF',
+  lightBackground: '#F5F5F5',
   text: '#333333',
   error: '#FF5252',
   success: '#4CAF50',
