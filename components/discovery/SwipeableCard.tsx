@@ -1,4 +1,4 @@
-import React, { useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -8,12 +8,14 @@ import {
   TouchableOpacity,
   ScrollView,
   Animated,
+  ActivityIndicator,
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import { FontAwesome } from '@expo/vector-icons';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { UserProfile } from '../../types';
 import Colors from '../../constants/Colors';
+import { imageCacheManager } from '../../utils/imageCacheManager';
 
 interface SwipeableCardProps {
   user: UserProfile;
@@ -37,6 +39,54 @@ const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>((props, r
   const translateY = useRef(new Animated.Value(0)).current;
   const rotate = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
+  
+  // Photo navigation state
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [imagesPreloaded, setImagesPreloaded] = useState(false);
+  
+  // Preload all user photos using the cache manager
+  useEffect(() => {
+    if (user.photos && user.photos.length > 0) {
+      setImagesPreloaded(false);
+      
+      imageCacheManager.preloadImages(user.photos)
+        .then(() => {
+          setImagesPreloaded(true);
+          console.log('✅ All user photos preloaded for:', user.name);
+          console.log('📊 Cache info:', imageCacheManager.getCacheInfo());
+        })
+        .catch((error) => {
+          console.warn('⚠️ Some photos failed to preload for:', user.name, error);
+          setImagesPreloaded(true); // Still allow navigation even if some failed
+        });
+    }
+    
+    // Reset photo index when user changes
+    setCurrentPhotoIndex(0);
+  }, [user.photos, user.name]);
+  
+  const navigateToNextPhoto = () => {
+    if (user.photos && user.photos.length > 1) {
+      setCurrentPhotoIndex((prev) => (prev + 1) % user.photos.length);
+    }
+  };
+  
+  const navigateToPrevPhoto = () => {
+    if (user.photos && user.photos.length > 1) {
+      setCurrentPhotoIndex((prev) => (prev - 1 + user.photos.length) % user.photos.length);
+    }
+  };
+  
+  const handleImageTap = (event: any) => {
+    const { locationX } = event.nativeEvent;
+    const screenHalf = (screenWidth - 40) / 2; // Account for margins
+    
+    if (locationX > screenHalf) {
+      navigateToNextPhoto();
+    } else {
+      navigateToPrevPhoto();
+    }
+  };
   
   const formatDistance = (distance: number): string => {
     if (distance < 1) {
@@ -106,6 +156,7 @@ const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>((props, r
       translateY.setValue(0);
       rotate.setValue(0);
       opacity.setValue(1);
+      setCurrentPhotoIndex(0); // Reset photo index when card is reset
     },
   }));
 
@@ -177,16 +228,53 @@ const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>((props, r
         <Card style={styles.card}>
           <View style={styles.cardContent}>
             <View style={styles.imageContainer}>
-            {user.photos && user.photos.length > 0 ? (
-              <Image 
-                source={{ uri: user.photos[0] }} 
-                style={styles.image}
-                resizeMode="cover"
-                defaultSource={require('../../assets/images/default-avatar.png')}
-              />
-            ) : (
-              <View style={styles.placeholderImage}>
-                <FontAwesome name="user" size={100} color={Colors.disabled} />
+            <TouchableOpacity 
+              style={styles.imageTouch}
+              onPressIn={handleImageTap}
+              activeOpacity={1}
+            >
+              {user.photos && user.photos.length > 0 ? (
+                <View style={styles.imageWrapper}>
+                  <Image 
+                    source={imageCacheManager.getImageSource(user.photos[currentPhotoIndex])}
+                    style={styles.image}
+                    resizeMode="cover"
+                    defaultSource={require('../../assets/images/default-avatar.png')}
+                    onLoad={() => {
+                      if (__DEV__) {
+                        console.log('🖼️ Image loaded from cache:', user.photos[currentPhotoIndex]);
+                      }
+                    }}
+                    onError={(error) => {
+                      console.warn('❌ Failed to load image:', user.photos[currentPhotoIndex], error);
+                    }}
+                  />
+                  {/* Show subtle loading indicator if images aren't preloaded yet */}
+                  {!imagesPreloaded && !imageCacheManager.isImageLoaded(user.photos[currentPhotoIndex]) && (
+                    <View style={styles.imageLoadingOverlay}>
+                      <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.8)" />
+                    </View>
+                  )}
+                </View>
+              ) : (
+                <View style={styles.placeholderImage}>
+                  <FontAwesome name="user" size={100} color={Colors.disabled} />
+                </View>
+              )}
+            </TouchableOpacity>
+            
+            {/* Photo indicators */}
+            {user.photos && user.photos.length > 1 && (
+              <View style={styles.photoIndicators}>
+                {user.photos.map((_, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.photoIndicator,
+                      index === currentPhotoIndex && styles.activePhotoIndicator
+                    ]}
+                  />
+                ))}
               </View>
             )}
             
@@ -282,9 +370,27 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
     overflow: 'hidden',
   },
+  imageTouch: {
+    width: '100%',
+    height: '100%',
+  },
+  imageWrapper: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+  },
   image: {
     width: '100%',
     height: '100%',
+  },
+  imageLoadingOverlay: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -10 }, { translateY: -10 }],
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 15,
+    padding: 5,
   },
   placeholderImage: {
     width: '100%',
@@ -292,6 +398,24 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  photoIndicators: {
+    position: 'absolute',
+    top: 10,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  photoIndicator: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+  },
+  activePhotoIndicator: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
   likeOverlay: {
     position: 'absolute',
