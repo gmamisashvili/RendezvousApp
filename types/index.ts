@@ -147,6 +147,14 @@ export interface AuthResponse {
   user: User;
 }
 
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  token: string;
+  userId: number;
+  email: string;
+}
+
 export enum Gender {
   Male = 0,
   Female = 1,

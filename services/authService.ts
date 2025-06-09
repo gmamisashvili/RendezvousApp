@@ -1,12 +1,18 @@
 import api from './api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {ApiResponse, AuthResponse, User, UserLogin, UserRegistration} from '../types';
+import {ApiResponse, AuthResponse, LoginResponse, User, UserLogin, UserRegistration} from '../types';
 
 // Auth service with typed methods
 const authService = {
     // Register a new user
     register: async (userData: UserRegistration): Promise<ApiResponse<AuthResponse>> => {
-        const response = await api.post<AuthResponse>('/auth/register', userData);
+        // Ensure dateOfBirth is in UTC format for PostgreSQL
+        const registrationData = {
+            ...userData,
+            dateOfBirth: userData.dateOfBirth.toISOString()
+        };
+        
+        const response = await api.post<AuthResponse>('/auth/register', registrationData);
 
         if (response.success && response.data) {
             // Store the auth token
@@ -16,8 +22,8 @@ const authService = {
         return response;
     },
 
-    login: async (credentials: UserLogin): Promise<ApiResponse<AuthResponse>> => {
-        const response = await api.post<AuthResponse>('/auth/login', credentials);
+    login: async (credentials: UserLogin): Promise<ApiResponse<LoginResponse>> => {
+        const response = await api.post<LoginResponse>('/auth/login', credentials);
 
         if (response.success && response.data) {
             await AsyncStorage.setItem('authToken', response.data.token);

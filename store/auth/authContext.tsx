@@ -81,8 +81,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authService.login(credentials);
       if (response.success && response.data) {
-        setUser(response.data.user);
-        return { success: true };
+        // After successful login, fetch the user profile separately
+        const userResponse = await authService.getCurrentUser();
+        if (userResponse.success && userResponse.data) {
+          setUser(userResponse.data);
+          // Add a small delay to ensure state is updated before navigation
+          setTimeout(() => {
+            router.replace('/(tabs)/dashboard');
+          }, 100);
+          return { success: true };
+        } else {
+          // Login succeeded but couldn't fetch user profile
+          return { 
+            success: false, 
+            error: 'Login successful but failed to load profile. Please try again.' 
+          };
+        }
       }
       return { 
         success: false, 
