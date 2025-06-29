@@ -49,7 +49,11 @@ const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>((props, r
     if (user.photos && user.photos.length > 0) {
       setImagesPreloaded(false);
       
-      imageCacheManager.preloadImages(user.photos)
+      // Extract URLs from Photo objects
+      user.photos.sort((a, b) => a.isMain ? -1 : 1); // Ensure main photo is first
+      const photoUrls = user.photos.map(photo => photo.url);
+      
+      imageCacheManager.preloadImages(photoUrls)
         .then(() => {
           setImagesPreloaded(true);
           console.log('✅ All user photos preloaded for:', user.name);
@@ -236,21 +240,21 @@ const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>((props, r
               {user.photos && user.photos.length > 0 ? (
                 <View style={styles.imageWrapper}>
                   <Image 
-                    source={imageCacheManager.getImageSource(user.photos[currentPhotoIndex])}
+                    source={imageCacheManager.getImageSource(user.photos[currentPhotoIndex].url)}
                     style={styles.image}
                     resizeMode="cover"
                     defaultSource={require('../../assets/images/default-avatar.png')}
                     onLoad={() => {
                       if (__DEV__) {
-                        console.log('🖼️ Image loaded from cache:', user.photos[currentPhotoIndex]);
+                        console.log('🖼️ Image loaded from cache:', user.photos[currentPhotoIndex].url);
                       }
                     }}
                     onError={(error) => {
-                      console.warn('❌ Failed to load image:', user.photos[currentPhotoIndex], error);
+                      console.warn('❌ Failed to load image:', user.photos[currentPhotoIndex].url, error);
                     }}
                   />
                   {/* Show subtle loading indicator if images aren't preloaded yet */}
-                  {!imagesPreloaded && !imageCacheManager.isImageLoaded(user.photos[currentPhotoIndex]) && (
+                  {!imagesPreloaded && !imageCacheManager.isImageLoaded(user.photos[currentPhotoIndex].url) && (
                     <View style={styles.imageLoadingOverlay}>
                       <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.8)" />
                     </View>

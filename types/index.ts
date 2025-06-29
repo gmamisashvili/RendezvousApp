@@ -29,7 +29,7 @@ export interface UserProfile {
   name: string;
   age: number;
   bio?: string;
-  photos: string[];
+  photos: Photo[];
   interests: Interest[];
   distance: number;
   gender: Gender;

@@ -8,6 +8,11 @@ const photoService = {
         return api.get<Photo[]>('/photo');
     },
 
+    // Get photos for a specific user by ID
+    getUserPhotosByUserId: async (userId: number): Promise<ApiResponse<Photo[]>> => {
+        return api.get<Photo[]>(`/photo/user/${userId}`);
+    },
+
     // Upload a new photo
     uploadPhoto: async (photoData: FormData): Promise<ApiResponse<Photo>> => {
         return api.post<Photo>('/photo', photoData, {
@@ -30,6 +35,11 @@ const photoService = {
     // Get a specific photo by ID
     getPhoto: async (photoId: number): Promise<ApiResponse<Photo>> => {
         return api.get<Photo>(`/photo/${photoId}`);
+    },
+
+    // Refresh photo URL (for expired SAS tokens)
+    refreshPhotoUrl: async (photoId: number): Promise<ApiResponse<string>> => {
+        return api.get<string>(`/photo/refresh-url/${photoId}`);
     },
 };
 

@@ -1,8 +1,31 @@
 import api from './api';
+import photoService from './photoService';
 import { UserProfile, SwipeResult, SwipeAction, ApiResponse } from '../types';
 
 // Discovery service for browsing and matching with nearby users
 const discoveryService = {
+  // Helper function to load photos for users
+  loadPhotosForUsers: async (users: UserProfile[]): Promise<UserProfile[]> => {
+    const usersWithPhotos = await Promise.all(
+      users.map(async (user) => {
+        try {
+          const photosResult = await photoService.getUserPhotosByUserId(user.userId);
+          return {
+            ...user,
+            photos: photosResult.success ? photosResult.data || [] : []
+          };
+        } catch (error) {
+          console.error(`Failed to load photos for user ${user.userId}:`, error);
+          return {
+            ...user,
+            photos: []
+          };
+        }
+      })
+    );
+    return usersWithPhotos;
+  },
+
   // Get nearby users based on current location
   getNearbyUsers: async (
     latitude: number, 
@@ -49,6 +72,15 @@ const discoveryService = {
         };
       }
       
+      // If we got users, load their photos separately
+      if (result.success && result.data) {
+        const usersWithPhotos = await discoveryService.loadPhotosForUsers(result.data);
+        return {
+          ...result,
+          data: usersWithPhotos
+        };
+      }
+      
       return result;
     } catch (error: any) {
       console.error('Discovery service error:', error);
@@ -72,7 +104,30 @@ const discoveryService = {
   
   // Get user profile by ID
   getUserProfile: async (userId: number): Promise<ApiResponse<UserProfile>> => {
-    return api.get<UserProfile>(`/discovery/profile/${userId}`);
+    try {
+      const result = await api.get<UserProfile>(`/discovery/profile/${userId}`);
+      
+      // If we got a user profile, load photos separately
+      if (result.success && result.data) {
+        const photosResult = await photoService.getUserPhotosByUserId(result.data.userId);
+        const userWithPhotos = {
+          ...result.data,
+          photos: photosResult.success ? photosResult.data || [] : []
+        };
+        return {
+          ...result,
+          data: userWithPhotos
+        };
+      }
+      
+      return result;
+    } catch (error: any) {
+      console.error('Get user profile error:', error);
+      return {
+        success: false,
+        error: 'Failed to load user profile.'
+      };
+    }
   },
   
   // Report a user
@@ -88,7 +143,26 @@ const discoveryService = {
   
   // Get user's match history
   getMatches: async (): Promise<ApiResponse<UserProfile[]>> => {
-    return api.get<UserProfile[]>('/discovery/matches');
+    try {
+      const result = await api.get<UserProfile[]>('/discovery/matches');
+      
+      // If we got matches, load their photos separately
+      if (result.success && result.data) {
+        const matchesWithPhotos = await discoveryService.loadPhotosForUsers(result.data);
+        return {
+          ...result,
+          data: matchesWithPhotos
+        };
+      }
+      
+      return result;
+    } catch (error: any) {
+      console.error('Get matches error:', error);
+      return {
+        success: false,
+        error: 'Failed to load matches.'
+      };
+    }
   }
 };
 

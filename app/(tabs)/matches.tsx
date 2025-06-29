@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
@@ -15,6 +14,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import Colors from '../../constants/Colors';
 import { discoveryService } from '../../services';
 import { UserProfile } from '../../types';
+import SafeImage from '../../utils/SafeImage';
+import { imageCacheManager } from '../../utils/imageCacheManager';
 
 export default function MatchesScreen() {
   const [matches, setMatches] = useState<UserProfile[]>([]);
@@ -29,6 +30,17 @@ export default function MatchesScreen() {
       
       if (response.success && response.data) {
         setMatches(response.data);
+        
+        // Preload images for better user experience
+        const imageUrls = response.data
+          .filter(match => match.photos && match.photos.length > 0)
+          .map(match => match.photos.find(photo => photo.isMain)?.url || match.photos[0].url)
+          .filter(url => url); // Filter out any undefined or null URLs
+        
+        if (imageUrls.length > 0) {
+          imageCacheManager.preloadImages(imageUrls)
+            .catch(error => console.warn('Failed to preload some match images:', error));
+        }
       } else {
         console.error('Failed to fetch matches:', response.error);
         setMatches([]);
@@ -51,28 +63,37 @@ export default function MatchesScreen() {
     fetchMatches();
   }, [fetchMatches]);
 
-  const renderMatch = ({ item }: { item: UserProfile }) => (
-    <TouchableOpacity 
-      style={styles.matchCard}
-      onPress={() => {
-        // TODO: Navigate to chat screen
-        console.log('Navigate to chat with:', item.name);
-      }}
-    >
-      <Image 
-        source={{ uri: item.photos[0] || 'https://via.placeholder.com/80' }}
-        style={styles.matchPhoto}
-      />
-      <View style={styles.matchInfo}>
-        <Text style={styles.matchName}>{item.name}</Text>
-        <Text style={styles.matchAge}>{item.age} years old</Text>
-        <Text style={styles.matchDistance}>{item.distance}km away</Text>
-      </View>
-      <View style={styles.matchActions}>
-        <FontAwesome name="comment" size={24} color={Colors.primary} />
-      </View>
-    </TouchableOpacity>
-  );
+  const renderMatch = ({ item }: { item: UserProfile }) => {
+    // Use image cache manager for better performance
+    const imageSource = item.photos.find(photo => photo.isMain) ? 
+      imageCacheManager.getImageSource(item.photos.find(photo => photo.isMain)?.url || item.photos[0].url) : 
+      null;
+
+    return (
+      <TouchableOpacity 
+        style={styles.matchCard}
+        onPress={() => {
+          // TODO: Implement navigation to match details
+        }}
+      >
+        <SafeImage 
+          uri={imageSource?.uri || null}
+          style={styles.matchPhoto}
+          fallbackIcon="user"
+          fallbackIconSize={30}
+          fallbackIconColor={Colors.disabled}
+        />
+        <View style={styles.matchInfo}>
+          <Text style={styles.matchName}>{item.name}</Text>
+          <Text style={styles.matchAge}>{item.age} years old</Text>
+          <Text style={styles.matchDistance}>{item.distance}km away</Text>
+        </View>
+        <View style={styles.matchActions}>
+          <FontAwesome name='info' size={24} color={Colors.primary} />
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>

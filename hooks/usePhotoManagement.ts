@@ -19,6 +19,18 @@ export const usePhotoManagement = (): UsePhotoManagementReturn => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Helper function to sort photos - main photo first, then by date added (newest first)
+  const sortPhotos = useCallback((photosToSort: Photo[]): Photo[] => {
+    return [...photosToSort].sort((a, b) => {
+      // Main photo always comes first
+      if (a.isMain && !b.isMain) return -1;
+      if (!a.isMain && b.isMain) return 1;
+      
+      // If both are main or both are not main, sort by date (newest first)
+      return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+    });
+  }, []);
+
   const refreshPhotos = useCallback(async () => {
     try {
       setLoading(true);
@@ -26,7 +38,7 @@ export const usePhotoManagement = (): UsePhotoManagementReturn => {
       const response = await photoService.getUserPhotos();
       
       if (response.success && response.data) {
-        setPhotos(response.data);
+        setPhotos(sortPhotos(response.data));
       } else {
         setError(response.error || 'Failed to load photos');
       }
@@ -84,7 +96,7 @@ export const usePhotoManagement = (): UsePhotoManagementReturn => {
         const response = await photoService.uploadPhoto(formData);
         
         if (response.success && response.data) {
-          setPhotos(prev => [...prev, response.data!]);
+          setPhotos(prev => sortPhotos([...prev, response.data!]));
           Alert.alert('Success', 'Photo uploaded successfully!');
         } else {
           setError(response.error || 'Failed to upload photo');
@@ -108,7 +120,7 @@ export const usePhotoManagement = (): UsePhotoManagementReturn => {
       const response = await photoService.deletePhoto(photoId);
       
       if (response.success) {
-        setPhotos(prev => prev.filter(photo => photo.photoId !== photoId));
+        setPhotos(prev => sortPhotos(prev.filter(photo => photo.photoId !== photoId)));
         Alert.alert('Success', 'Photo deleted successfully!');
       } else {
         setError(response.error || 'Failed to delete photo');
@@ -131,11 +143,11 @@ export const usePhotoManagement = (): UsePhotoManagementReturn => {
       const response = await photoService.setMainPhoto(photoId);
       
       if (response.success) {
-        // Update local state to reflect the main photo change
-        setPhotos(prev => prev.map(photo => ({
+        // Update local state to reflect the main photo change and sort photos
+        setPhotos(prev => sortPhotos(prev.map(photo => ({
           ...photo,
           isMain: photo.photoId === photoId
-        })));
+        }))));
         Alert.alert('Success', 'Main photo updated successfully!');
       } else {
         setError(response.error || 'Failed to set main photo');
